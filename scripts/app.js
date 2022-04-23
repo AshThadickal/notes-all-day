@@ -1,7 +1,10 @@
+import { getInfo } from "./firebase.js"
+getInfo()
 const app = {}
 
 app.init = () => {
-    app.getQuote()
+    app.getQuote()  
+    getInfo() 
 }
 
 app.randomizer = (array) => {
@@ -26,5 +29,6 @@ app.displayQuote = (quoteObj) => {
     <p>Author: ${quoteObj.author}`
     $('.welcome').prepend(quoteDisplay)
 }
+
 
 app.init();
