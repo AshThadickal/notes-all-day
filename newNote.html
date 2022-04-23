@@ -22,18 +22,21 @@
             <form>
                 <div class="mb-3">
                     <label for="date" class="form-label">Date:</label>
-                    <input type="date" class="form-control" id="date">
+                    <input type="date" class="form-control date" id="date">
+
+                    <label for="title" class="form-label">Title of Note</label>
+                    <input type="text" class="form-control title" id="title">
 
                     <label for="newNote" class="form-label">Enter your Note Below:</label>
-                    <textarea class="form-control" id="newNote" rows="5"></textarea>
+                    <textarea class="form-control note" id="newNote" rows="5"></textarea>
 
-                    <button type="submit">Save</button>
+                    <button type="submit button" class="btn btn-primary saveButton">Save</button>
 
                 </div>
                 
             </form>
-            <button onclick="location.href='index.html'">Return Home</button>
-            <button onclick="location.href='savedNotes.html'">View Saved Notes</button>
+            <button type='button' class='btn btn-secondary' onclick="location.href='index.html'">Return Home</button>
+            <button type='button' class='btn btn-secondary' onclick="location.href='savedNotes.html'">View Saved Notes</button>
         </section>
     </main>
 

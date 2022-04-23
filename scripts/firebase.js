@@ -1,8 +1,10 @@
+import { displayNotes } from "./app.js"
+
 // Import the functions you need from the SDKs you need
 import {initializeApp} from "https://www.gstatic.com/firebasejs/9.6.11/firebase-app.js";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
-import { getDatabase, ref, get } from 'https://www.gstatic.com/firevasejs/9.6.11/firebase-database.js'
+import { getDatabase, ref, get, push } from 'https://www.gstatic.com/firebasejs/9.6.11/firebase-database.js'
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -21,15 +23,18 @@ const database = getDatabase(firebase)
 const dbRef = ref(database)
 
 export const getInfo = () => {
-    console.log('wtf')
-
-    // get(dbRef).then((snapshot) => {
-    //     if (snapshot.exists()) {
-    //         console.log(snapshot.val())
-    //     } else {
-    //         console.log(`didn't work`)
-    //     }
-    // }).catch((error) => {
-    //     console.log(error)
-    // })
+    get(dbRef).then((snapshot) => {
+        if (snapshot.exists()) {
+            console.log(snapshot.val())
+            displayNotes(snapshot.val())
+        } else {
+            console.log(`didn't work`)
+        }
+    }).catch((error) => {
+        console.log(error)
+    })
 } 
+
+export const pushInfo = (obj) => {
+    push(dbRef, obj);
+}
