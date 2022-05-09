@@ -1,4 +1,4 @@
-import { getInfo, pushInfo } from "./firebase.js"
+import { getInfo, pushInfo, createLogin, signIn } from "./firebase.js"
 
 const app = {}
 
@@ -6,6 +6,7 @@ app.init = () => {
     app.getQuote()  
     app.handleSubmit()
     getInfo() 
+    app.userSignup()
 }
 
 app.randomizer = (array) => {
@@ -33,7 +34,7 @@ app.displayQuote = (quoteObj) => {
 
 // event listener to gather note and push to firebase
 app.handleSubmit = () => {
-    $('form').on('submit', (e) => {
+    $('.newNoteForm').on('submit', (e) => {
         e.preventDefault();
         
         const noteObj = {
@@ -62,6 +63,33 @@ export const displayNotes = (results) => {
         <p>${results[key].note}</p>`)
     }
 }
+
+app.userSignup = () => {
+    $('.signupForm').on('submit', (e) => {
+        e.preventDefault();
+        
+        // const user = $('#user')[0].value
+        const userEmail = $('#email')[0].value
+        const userPassword = $('#password')[0].value
+
+        createLogin(userEmail, userPassword)
+
+    })    
+}
+
+app.userSignin = () => {
+    $('.loginForm').on('submit', e => {
+        e.preventDefault();
+        
+        const userEmail = $('#loginEmail')[0].value
+        const userPassword = $('#loginPassword')[0].value
+
+        console.log(userEmail, userPassword)
+
+        signIn(userEmail, userPassword)
+    })
+}
+
 
 
 app.init();
