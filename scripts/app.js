@@ -1,12 +1,13 @@
-import { getInfo, pushInfo, createLogin, signIn } from "./firebase.js"
+import { createAccount, signIn, monitorAuthState, logout } from "./firebase.js"
 
 const app = {}
 
 app.init = () => {
     app.getQuote()  
     app.handleSubmit()
-    getInfo() 
+    // getInfo() 
     app.userSignup()
+    monitorAuthState()
 }
 
 app.randomizer = (array) => {
@@ -34,6 +35,7 @@ app.displayQuote = (quoteObj) => {
 
 // event listener to gather note and push to firebase
 app.handleSubmit = () => {
+    // NEED TO DO A SEARCH IN THE DATABASE AND SEE IF THE USER ID IS THERE AND IF SO, LINK IT TO THAT USER'S OBJECT
     $('.newNoteForm').on('submit', (e) => {
         e.preventDefault();
         
@@ -46,7 +48,7 @@ app.handleSubmit = () => {
         noteObj.title = $('.title')[0].value;
         noteObj.note = $('.note')[0].value;
 
-        pushInfo(noteObj)
+        // pushInfo(noteObj)
         $('.date')[0].value = '0';
         $('.title')[0].value = '';
         $('.note')[0].value = '';
@@ -54,26 +56,20 @@ app.handleSubmit = () => {
 }
 
 // method to display saved notes 
-export const displayNotes = (results) => {
-    // take the returned notes and display
-    const container = $('.savedContainer');
-    for(let key in results) {
-        container.append(`<div class='col'><p>${results[key].date}</p>
-        <p>${results[key].title}</p>
-        <p>${results[key].note}</p>`)
-    }
-}
+// export const displayNotes = (results) => {
+//     // take the returned notes and display
+//     const container = $('.savedContainer');
+//     for(let key in results) {
+//         container.append(`<div class='col'><p>${results[key].date}</p>
+//         <p>${results[key].title}</p>
+//         <p>${results[key].note}</p>`)
+//     }
+// }
 
 app.userSignup = () => {
     $('.signupForm').on('submit', (e) => {
         e.preventDefault();
-        
-        // const user = $('#user')[0].value
-        const userEmail = $('#email')[0].value
-        const userPassword = $('#password')[0].value
-
-        createLogin(userEmail, userPassword)
-
+        createAccount();
     })    
 }
 
@@ -89,7 +85,5 @@ app.userSignin = () => {
         signIn(userEmail, userPassword)
     })
 }
-
-
 
 app.init();
