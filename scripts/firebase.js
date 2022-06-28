@@ -6,10 +6,20 @@ import {initializeApp} from "https://www.gstatic.com/firebasejs/9.6.11/firebase-
 // https://firebase.google.com/docs/web/setup#available-libraries
 import { getDatabase, ref, get, push } from 'https://www.gstatic.com/firebasejs/9.6.11/firebase-database.js'
 
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/9.6.11/firebase-auth.js'
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/9.6.11/firebase-auth.js';
+
+const app = {}
+
+app.init = () => {
+    app.getQuote()
+    app.handleSubmit()
+    // getInfo() 
+    app.userSignup()
+    app.monitorAuthState()
+}
 
 // Your web app's Firebase configuration
-const firebaseConfig = {
+app.firebaseConfig = {
     apiKey: "AIzaSyB-YqDcdIaWEM9f7_pwoMnlpTlldyp026k",
     authDomain: "notesfordays-7e0c5.firebaseapp.com",
     databaseURL: "https://notesfordays-7e0c5-default-rtdb.firebaseio.com",
@@ -20,13 +30,13 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-const firebase = initializeApp(firebaseConfig);
-const database = getDatabase(firebase)
-const dbRef = ref(database)
+app.firebase = initializeApp(app.firebaseConfig);
+app.database = getDatabase(app.firebase)
+app.dbRef = ref(app.database)
 
 // gets the current info in firebase
-export const getInfo = () => {
-    get(dbRef).then((snapshot) => {
+app.getInfo = () => {
+    get(app.dbRef).then((snapshot) => {
         if (snapshot.exists()) {
             displayNotes(snapshot.val())
         } else {
@@ -37,63 +47,44 @@ export const getInfo = () => {
     })
 } 
 
-// pushes data to firebase (currenlty is the notes)
-export const pushInfo = (obj) => {
-    push(dbRef, obj);
+// pushes user info to firebase
+app.pushInfo = (obj) => {
+    push(app.dbRef, obj);
 }
 
 // Authorization
-export const auth = getAuth();
-export const user = auth.currentUser;
+app.auth = getAuth();
+app.user = app.auth.currentUser;
 
 // create a user login
-
-export const createAccount = async() => {
+app.createAccount = async() => {
     const email = $('#emailSignup')[0].value;
     const password = $('#passwordSignup')[0].value;
     const displayName = $('#userSignup')[0].value;
     
     try{
-        const res = await createUserWithEmailAndPassword(auth, email, password)
+        const res = await createUserWithEmailAndPassword(app.auth, email, password)
         const user = {
             name: displayName,
             email: res.user.email,
-            userID: res.user.uid
+            notes: {
+                date: '',
+                title: '',
+                note: ''
+            },
+            userID: res.user.uid,
         } 
 
-        pushInfo(user)
+        app.pushInfo(user)
 
         }
     catch(error) {
         console.log(`There was an error: ${error}`)
     }
-
 }
 
-
-// export const createLogin = (email, password, userName) => {
-//       createUserWithEmailAndPassword(auth, email, password)
-//         .then((userCredential) => {
-//             // const user = {
-//             //     userID: userCredential.user.uid,
-//             //     userEmail: email,
-//             //     userName: userName,
-//             //     notes: {}
-//             // }
-//             const user = userCredential.user.uid
-//             console.log(user)
-//             push(dbRef, user)
-            
-//             // push to database with ref `/${user}`
-//         })
-//         .catch((error) => {
-//             const errorCode = error.code;
-//             const errorMessage = error.message
-//         })
-// }
-
 // sign in
-export const signIn = async() => {
+app.signIn = async() => {
     const loginEmail = $('#loginEmail')[0].value;
     const loginPassword = $('#loginPassword')[0].value;
 
@@ -107,14 +98,15 @@ export const signIn = async() => {
 }
 
 
-// function for if user is signed in (do I need to get the specific user ID from realtime database and call oush the notes informaiton here?)
-export const monitorAuthState = async() => {
-    onAuthStateChanged(auth, (user) => {
+// function for if user is signed in (do I need to get the specific user ID from realtime database and call push the notes informaiton here?)
+app.monitorAuthState = async() => {
+    onAuthStateChanged(app.auth, (user) => {
         const uid = user.uid;
         if (user) {
             
             console.log(uid, 'you are signed in')
             // push(dbRef, uid)
+            app.handleSubmit(uid)
             return uid
             // is user is signed in then I want the notes to be specific to their login only
         } 
@@ -127,19 +119,20 @@ export const monitorAuthState = async() => {
     
 }
 
-const addToDataBase = (userId) => {
-    firebase.database().ref(userId).once('value').then(function(snapshot){
-        console.log(snapshot)
-    })
+// I don't think I need this.
+// const addToDataBase = (userId) => {
+//     firebase.database().ref(userId).once('value').then(function(snapshot){
+//         console.log(snapshot)
+//     })
 
-}
+// }
 
-export const logout = async () => {
-    await signOut(auth)
+app.logout = async () => {
+    await signOut(app.auth)
 }
 
 // user profile information - do I need this?
-export const userProfile = () => {
+app.userProfile = () => {
     if(user !== null) {
         const userDetails = {
             displayName: user.displayName,
@@ -150,4 +143,95 @@ export const userProfile = () => {
     }
 }
 
+// app.userID = app.monitorAuthState();
 
+app.randomizer = (array) => {
+    const index = Math.floor(Math.random() * array.length);
+    const ramdomObj = array[index]
+    return ramdomObj
+}
+
+app.getQuote = () => {
+    $.ajax({
+        url: 'https://type.fit/api/quotes',
+        method: 'GET',
+        dataType: 'JSON'
+    }).then(res => {
+        const theObj = app.randomizer(res)
+        app.displayQuote(theObj)
+    })
+}
+
+app.displayQuote = (quoteObj) => {
+    const quoteDisplay = `<p>${quoteObj.text}</p>
+    <p>Author: ${quoteObj.author}`
+    $('.welcome').prepend(quoteDisplay)
+}
+
+app.pushNote = (obj, userID) => {
+    // need to differentiate which user the note belongs too first
+    // grab the database that is specific to that userID
+    const dbRef = ref(app.database, `/${userID}`);
+    const newNoteObj = ///
+    push(dbRef, obj)
+}
+// event listener to gather note and push to firebase
+app.handleSubmit = (userID) => {
+    // NEED TO DO A SEARCH IN THE DATABASE AND SEE IF THE USER ID IS THERE AND IF SO, LINK IT TO THAT USER'S OBJECT
+    console.log(userID)
+    $('.newNoteForm').on('submit', (e) => {
+        e.preventDefault();  
+
+        // const noteObj = {
+        //     date: '',
+        //     title: '',
+        //     note: ''
+        // }
+        // noteObj.date = $('.date')[0].value;
+        // noteObj.title = $('.title')[0].value;
+        // noteObj.note = $('.note')[0].value;
+
+        notes.date = $('.date')[0].value;
+        notes.title = $('.title')[0].value;
+        notes.note = $('.note')[0].value;
+
+        app.pushNote(noteObj, userID)
+        $('.date')[0].value = '0';
+        $('.title')[0].value = '';
+        $('.note')[0].value = '';
+        
+    })
+}
+
+// method to display saved notes 
+// export const displayNotes = (results) => {
+//     // take the returned notes and display
+//     const container = $('.savedContainer');
+//     for(let key in results) {
+//         container.append(`<div class='col'><p>${results[key].date}</p>
+//         <p>${results[key].title}</p>
+//         <p>${results[key].note}</p>`)
+//     }
+// }
+
+app.userSignup = () => {
+    $('.signupForm').on('submit', (e) => {
+        e.preventDefault();
+        app.createAccount();
+    })
+}
+
+app.userSignin = () => {
+    $('.loginForm').on('submit', e => {
+        e.preventDefault();
+
+        const userEmail = $('#loginEmail')[0].value
+        const userPassword = $('#loginPassword')[0].value
+
+        console.log(userEmail, userPassword)
+
+        signIn(userEmail, userPassword)
+    })
+}
+
+app.init();
